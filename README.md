@@ -14,3 +14,7 @@ catatan: Kurang bagus di tampilan PC
 1. Buka aplikasi di Chrome Android
 2. Menu (⋮) → Add to Home Screen
 3. Jalankan seperti aplikasi native
+
+## Screenshot
+
+![Calculator Home](screenshots/calculator.png)
