@@ -16,5 +16,4 @@ catatan: Kurang bagus di tampilan PC
 3. Jalankan seperti aplikasi native
 
 ## Screenshot
-
-![Calculator Home](screenshots/calculator.png)
+<img src="screenshots/home.png" width="320" alt="Calculator Screenshot">
