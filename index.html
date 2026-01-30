@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f0f0f">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalkulator</title>
+    <style>
+        /* Reset & Base Style */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Container Utama */
+        .calculator {
+            background: linear-gradient(145deg, #0f0f0f, #151515);
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 15px 20px 35px 20px;
+            position: relative;
+            box-shadow: inset 0 0 50px rgba(255,255,255,0.02);
+        }
+
+        .calculator::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
+            pointer-events: none;
+        }
+
+        /* Area Brand */
+        .brand {
+            color: #f39c12;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+            z-index: 10;
+        }
+
+        /* Layar Multi-Baris */
+        #display {
+            width: 100%;
+            flex: 0 0 40vh; /* Mengambil 40% tinggi layar */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            padding: 20px 1px 20px 1px;
+            color: #ffffff;
+            font-size: 50px;
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: normal;
+            overflow-y: auto;
+            text-align: right;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Grid Tombol */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 5px 0 25px 0;
+            flex-grow: 1;
+        }
+
+        /* Gaya Tombol */
+        button {
+            border: none;
+            border-radius: 10%;
+            font-size: 28px;
+            font-weight: 500;
+            color: white;
+            background: #575757;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s ease;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.5), 
+                        -2px -2px 10px rgba(255,255,255,0.05);
+        }
+
+        button:active {
+            transform: scale(0.92);
+            filter: brightness(1.5);
+            box-shadow: inset 2px 2px 10px rgba(0,0,0,0.8);
+        }
+
+        /* Warna Khusus Tombol */
+        .operator { background: #da8b0c; }
+        .clear { background: #c9c9c9; color: black; }
+        .ce { background: #c9c9c9; color: black; }
+        .equals { background: #2b2bcb; }
+        
+        /* Tombol Nol Spesifik */
+        .zero {
+            grid-column: span 2;
+            border-radius: 6px;
+        }
+
+        .equals {
+        background: #2b2bcb;
+        grid-row: span 2;
+        border-radius: 6px;
+        }
+
+
+        /* Scrollbar Halus untuk Layar */
+        #display::-webkit-scrollbar {
+            width: 4px;
+        }
+        #display::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <div class="brand">SIMPLE CALCULATOR</div>
+    <div id="display">0</div>
+    
+    <div class="buttons">
+        <button class="clear" onclick="clearAll()">AC</button>
+        <button class="ce" onclick="clearEntry()">CE</button>
+        <button class="operator" onclick="appendToDisplay('/')">÷</button>
+        <button class="operator" onclick="appendToDisplay('*')">×</button>
+        
+        <button onclick="appendToDisplay('7')">7</button>
+        <button onclick="appendToDisplay('8')">8</button>
+        <button onclick="appendToDisplay('9')">9</button>
+        <button class="operator" onclick="appendToDisplay('-')">−</button>
+        
+        <button onclick="appendToDisplay('4')">4</button>
+        <button onclick="appendToDisplay('5')">5</button>
+        <button onclick="appendToDisplay('6')">6</button>
+        <button class="operator" onclick="appendToDisplay('+')">+</button>
+        
+        <button onclick="appendToDisplay('1')">1</button>
+        <button onclick="appendToDisplay('2')">2</button>
+        <button onclick="appendToDisplay('3')">3</button>
+        <button class="equals" onclick="calculate()">=</button>
+        
+        <button class="zero" onclick="appendToDisplay('0')">0</button>
+        <button onclick="appendToDisplay('.')">.</button>
+    </div>
+</div>
+
+<script>
+    const displayElement = document.getElementById('display');
+    let rawInput = ""; 
+
+    function appendToDisplay(input) {
+        const lastChar = rawInput.slice(-1);
+        
+        // Mencegah dua operator berurutan
+        if (isOperator(lastChar) && isOperator(input)) {
+            rawInput = rawInput.slice(0, -1);
+        }
+        
+        // Mencegah input diawali operator kecuali minus
+        if (rawInput === "" && isOperator(input) && input !== '-') return;
+
+        rawInput += input;
+        updateDisplay();
+    }
+
+    function isOperator(char) {
+        return ['+', '-', '*', '/'].includes(char);
+    }
+
+    function updateDisplay() {
+        if (rawInput === "") {
+            displayElement.innerText = "0";
+            return;
+        }
+
+        // Format angka dengan koma (Pemisah ribuan real-time)
+        let formatted = rawInput.replace(/\d+(\.\d+)?/g, (match) => {
+            // Menggunakan format lokal untuk menambahkan koma
+            let parts = match.split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return parts.join('.');
+        });
+
+        // Ganti simbol visual agar cantik di layar
+        displayElement.innerText = formatted
+            .replace(/\*/g, '×')
+            .replace(/\//g, '÷')
+            .replace(/-/g, '−');
+
+        // Selalu scroll ke paling bawah jika teks meluber ke baris baru
+        displayElement.scrollTop = displayElement.scrollHeight;
+    }
+
+    function clearAll() {
+        rawInput = "";
+        updateDisplay();
+    }
+
+    function clearEntry() {
+        rawInput = rawInput.slice(0, -1);
+        updateDisplay();
+    }
+
+    function calculate() {
+        if (rawInput === "") return;
+        try {
+            // Hitung menggunakan eval
+            let result = eval(rawInput);
+            
+            // Batasi angka di belakang koma agar tidak terlalu panjang
+            if (!Number.isInteger(result)) {
+                result = parseFloat(result.toFixed(8));
+            }
+            
+            rawInput = result.toString();
+            updateDisplay();
+        } catch (error) {
+            displayElement.innerText = "Error";
+            rawInput = "";
+        }
+    }
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => console.log("PWA ready"))
+      .catch(err => console.error("SW error", err));
+  });
+}
+</script>
+
+
+</body>
+</html>
